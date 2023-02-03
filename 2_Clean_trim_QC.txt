@@ -1,0 +1,161 @@
+#Drought Disturbance Experiment
+
+#Adriana L. Romero-Olivares' protocol for processing RNAseq data of soil
+#Pipeline ran by Andrea Lopez
+#Section 2
+#File name: 2_Clean_trim_QC
+#Step: Cleaning-trimming of raw reads
+
+#In this script, you will: 
+
+# 1. Unzip files with the .fastq.gz extension into files that have a .fastq extension.  
+# 2. Create a FastQC report to look at the quality of the sequences.  
+# 3. Combine the individual FastQC reports into MultiQC reports for Inter- and Underspace samples.  
+# 4. Trim the sequences using Trimmomatic version 0.39.   
+# 5. Move the trimmed files based on whether or not they will be used for downstream analyses.
+# 6. Generate a FastQC of the trimmed sequences.
+# 7. Use MultiQC to get one report for inter- and underspace samples.
+
+#Memory requirements for bash script: 
+#--cpus-per-task=20 ##The number of threads the code will use
+#--mem-per-cpu=10G  ## Real memory(MB) per CPU required by the job.
+
+
+#1. Unzip the .fastq.gz files into .fastq
+gunzip -d ./Runs-Inter/*.gz
+gunzip -d ./Runs-Under/*.gz
+
+echo "Load the rna_seq environment" 
+module load conda 
+conda activate /fs1/project/egcc/conda_env/rna_seq
+
+#check that the module was loaded. 
+module env list
+echo "rna_seq loaded"
+
+#2. Create a FastQC report to look at the quality of the sequences.
+
+echo "Make a quality report for the files in the under and inter directory using 'Fastqc'" 
+
+fastqc ./Runs-Inter/*.fastq 
+fastqc ./Runs-Under/*.fastq
+ 
+echo "Move the reports to the 'Runs_Inter_QC' and 'Runs_Under_QC' directories." 
+
+cd /project/egcc/RNAseq_drought_disturbance
+mkdir Runs_Inter_QC
+mkdir Runs_Under_QC
+
+mv /project/egcc/RNAseq_drought_disturbance/Runs-Inter/*fastqc* /project/egcc/RNAseq_drought_disturbance/Runs_Inter_QC
+
+mv /project/egcc/RNAseq_drought_disturbance/Runs-Under/*fastqc* /project/egcc/RNAseq_drought_disturbance/Runs_Under_QC
+
+#3. Use MultiQC to get one report for inter- and underspace samples.
+
+echo "Run the multiqc for inter- and underspace in different directories since it'll overwrite the files." 
+cd /project/egcc/RNAseq_drought_disturbance/Runs_Inter_QC
+multiqc .
+ 
+cd /project/egcc/RNAseq_drought_disturbance/Runs_Under_QC
+multiqc .
+
+#Save those MultiQC reports for reference. 
+
+#4. Use the trimmomatic version 0.39 to trim, crop and remove adapters from the sequences." 
+
+echo "The user needs to supply the TruSeq3-PE.fa file mentioned in the command below."
+#The TruSeq3-PE.fa file can be found here https://github.com/timflutre/trimmomatic/blob/master/adapters/TruSeq3-PE.fa
+
+echo "The TruSeq3-PE.fa file was added to both the inter- and underspace directories."
+
+#The command below is for trimming more than one sample at a time using a for loop. 
+
+echo "Use a for loop to repeat the command for each sample in both the inter- and underspace directories."
+
+echo "Begin recursive action for interspace sequences."
+
+echo "Set the working directory."
+cd /project/egcc/RNAseq_drought_disturbance/Runs-Inter
+
+for infile in /project/egcc/RNAseq_drought_disturbance/Runs-Inter/*_R1_001.fastq
+do
+base=$(basename ${infile} _R1_001.fastq) 
+trimmomatic PE ${infile} ${base}_R2_001.fastq \
+${base}_R1_001_trimmed.paired.fastq ${base}_R1_001_trimmed.unpaired.fastq \
+${base}_R2_001_trimmed.paired.fastq ${base}_R2_001_trimmed.unpaired.fastq \
+ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:5 TRAILING:5 SLIDINGWINDOW:4:15 MINLEN:25
+done
+
+echo "trimming ended"
+
+echo "begin recursive action for underspace sequences."
+
+cd /project/egcc/RNAseq_drought_disturbance/Runs-Under
+
+for infile in /project/egcc/RNAseq_drought_disturbance/Runs-Under/*_R1_001.fastq
+do
+base=$(basename ${infile} _R1_001.fastq) 
+trimmomatic PE ${infile} ${base}_R2_001.fastq \
+${base}_R1_001_trimmed.paired.fastq ${base}_R1_001_trimmed.unpaired.fastq \
+${base}_R2_001_trimmed.paired.fastq ${base}_R2_001_trimmed.unpaired.fastq \
+ILLUMINACLIP:TruSeq3-PE.fa:2:30:10 LEADING:5 TRAILING:5 SLIDINGWINDOW:4:15 MINLEN:25
+done
+
+echo "trimming ended"
+
+#Everything looks good in the output and all sequences were trimmed. 
+
+#5. Move sequences based on whether or not they will be used for downstream analyses.
+
+cd /project/egcc/RNAseq_drought_disturbance
+mkdir Runs-Inter-trimmed
+cd /project/egcc/RNAseq_drought_disturbance/Runs-Inter-trimmed
+mkdir downstream
+mkdir other
+
+cd /project/egcc/RNAseq_drought_disturbance
+mkdir Runs-Under-trimmed
+cd /project/egcc/RNAseq_drought_disturbance/Runs-Under-trimmed
+mkdir downstream
+mkdir other
+
+echo "downstream"
+mv /project/egcc/RNAseq_drought_disturbance/Runs-Inter/*_trimmed.paired.fastq /project/egcc/RNAseq_drought_disturbance/Runs-Inter-trimmed/downstream
+
+mv /project/egcc/RNAseq_drought_disturbance/Runs-Under/*_trimmed.paired.fastq /project/egcc/RNAseq_drought_disturbance/Runs-Under-trimmed/downstream
+
+echo "other"
+mv /project/egcc/RNAseq_drought_disturbance/Runs-Inter/*_trimmed.unpaired.fastq /project/egcc/RNAseq_drought_disturbance/Runs-Inter-trimmed/other
+
+mv /project/egcc/RNAseq_drought_disturbance/Runs-Under/*_trimmed.unpaired.fastq /project/egcc/RNAseq_drought_disturbance/Runs-Under-trimmed/other
+
+#6. Generate a FastQC of the trimmed sequences.
+
+echo "Generate a Fastqc of the trimmed sequences."
+
+echo "Make a quality report for the trimmed files in the under and inter directory."
+fastqc ./Runs-Inter-trimmed/downstream/*.fastq
+fastqc ./Runs-Under-trimmed/downstream/*.fastq
+
+echo "Move the reports to the 'Runs_Inter_QC_trimmed' and 'Runs_Under_QC_trimmed' directories."
+
+cd /project/egcc/RNAseq_drought_disturbance
+mkdir Runs_Inter_QC_trimmed
+mkdir Runs_Under_QC_trimmed
+
+mv /project/egcc/RNAseq_drought_disturbance/Runs-Inter-trimmed/downstream/*fastqc* /project/egcc/RNAseq_drought_disturbance/Runs_Inter_QC_trimmed
+mv /project/egcc/RNAseq_drought_disturbance/Runs-Under-trimmed/downstream/*fastqc* /project/egcc/RNAseq_drought_disturbance/Runs_Under_QC_trimmed
+
+#7. Use MultiQC to get one report for inter- and underspace samples.
+
+cd /project/egcc/RNAseq_drought_disturbance/Runs_Inter_QC_trimmed
+multiqc .
+
+cd /project/egcc/RNAseq_drought_disturbance/Runs_Under_QC_trimmed
+multiqc .
+
+echo "Results show no adapter is left in the reads."
+
+conda deactivate
+
+#Notes. For downstream analyses use 'sample_R1_001_trimmed.paired.fastq' and 'sample_R2_001_trimmed.paired.fastq'

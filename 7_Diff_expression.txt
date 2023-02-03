@@ -1,0 +1,58 @@
+#Drought Disturbance Experiment
+
+#Adriana L. Romero-Olivares' protocol for processing RNAseq data of soil
+#Pipeline ran by Andrea Lopez
+#Section 7
+#File name: 7_Diff_expression
+#Step: Differential expression analysis
+
+#In this script, you will: 
+
+# 1. Use Trinity's toolkit to run differential expression analysis using edgeR and the script 'run_DE_analysis.pl'.
+# 2. Use Trinity's toolkit script 'analyze_diff_expr.pl' to analyze differential expression data.
+
+#Memory requirements for bash script: 
+#--cpus-per-task=20 ##The number of threads the code will use
+#--mem-per-cpu=20G  ## Real memory(MB) per CPU required by the job.
+
+
+#1. Use Trinity's toolkit to run differential expression analysis using edgeR and the script 'run_DE_analysis.pl'.
+
+echo "activate the rna_seq environment."
+module load conda
+conda activate /fs1/project/egcc/conda_env/rna_seq
+
+echo "Interspace"
+
+cd /project/egcc/RNAseq_drought_disturbance/Runs-Inter-trimmed/downstream
+
+/fs1/project/egcc/conda_env/rna_seq/bin/run_DE_analysis.pl --matrix Trinity.isoform.counts.matrix --method edgeR --min_reps_min_cpm 1,1 --dispersion 0.4
+
+echo "Underspace"
+
+cd /project/egcc/RNAseq_drought_disturbance/Runs-Under-trimmed/downstream
+
+/fs1/project/egcc/conda_env/rna_seq/bin/run_DE_analysis.pl --matrix Trinity.isoform.counts.matrix --method edgeR --min_reps_min_cpm 1,1 --dispersion 0.4
+
+
+#2. Use Trinity's toolkit script 'analyze_diff_expr.pl' to analyze differential expression data.
+
+echo "Interspace"
+
+#In this case, the directory is 'edgeR.379127.dir' but yours will be different. Set your working directory based on the directory name that is created after step 1.
+cd /project/egcc/RNAseq_drought_disturbance/Runs-Inter-trimmed/downstream/edgeR.379127.dir
+
+/fs1/project/egcc/conda_env/rna_seq/bin/analyze_diff_expr.pl --matrix /project/egcc/RNAseq_drought_disturbance/Runs-Inter-trimmed/downstream/Trinity.isoform.TMM.EXPR.matrix -P 0.05 --max_genes_clust 28000 --output express_DF_0.05
+
+echo "Underspace"
+
+#In this case, the directory is 'edgeR.3577297.dir' but yours will be different. Set your working directory based on the directory name that is created after step 1.
+cd /project/egcc/RNAseq_drought_disturbance/Runs-Under-trimmed/downstream/edgeR.3577297.dir
+
+/fs1/project/egcc/conda_env/rna_seq/bin/analyze_diff_expr.pl --matrix /project/egcc/RNAseq_drought_disturbance/Runs-Under-trimmed/downstream/Trinity.isoform.TMM.EXPR.matrix -P 0.05 --max_genes_clust 223000 --output express_DF_0.05
+
+conda deactivate
+
+#A table with up and down regulated genes significant at p = 0.05 is in folder express_DF_0.05
+
+#Proceed to step 8 which will identify contigs up and down regulated using an annotated metatranscriptome. 
