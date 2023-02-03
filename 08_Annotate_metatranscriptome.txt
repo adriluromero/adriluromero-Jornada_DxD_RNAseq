@@ -1,0 +1,93 @@
+#Jornada_DxD_RNAseq
+
+#Adriana L. Romero-Olivares' protocol for processing RNAseq data of soil
+#Pipeline ran by Andrea Lopez
+#Section 8
+#File name: 08_Annotate_metatranscriptome
+#Step: Annotate metatranscriptome
+
+#In this script, you will: 
+
+# 1. Use transdecoder version 5.5.0 to find coding regions within transcripts.
+# 2. Run hmmscan against the CAZy (Carbohydrate-Active Enzymes) database using hmmer version 3.3.2 
+# 3. Use trinotate version 3.2.2 to Prepare the hmm pfam database for hmmscan. 
+# 4. Run hmmscan against the pfam database using hmmer version 3.3.2
+
+#Memory requirements for bash script: 
+#--cpus-per-task=20 ##The number of threads the code will use
+#--mem-per-cpu=20G  ## Real memory(MB) per CPU required by the job.
+
+
+#1. Use transdecoder version 5.5.0 to find coding regions within transcripts.
+
+echo "activate the rna_seq environment."
+module load conda
+conda activate /fs1/project/egcc/conda_env/rna_seq
+
+echo "Interspace"
+
+TransDecoder.LongOrfs -t /project/egcc/RNAseq_drought_disturbance/Runs-Inter-trimmed/unmerged_mRNA/Trinity_ALL_inter_f.Trinity.fasta
+
+echo "Underspace"
+
+TransDecoder.LongOrfs -t /project/egcc/RNAseq_drought_disturbance/Runs-Under-trimmed/unmerged_mRNA/Trinity_ALL_under_f.Trinity.fasta
+
+conda deactivate
+
+#The file 'longest_orfs.pep' will be used for downstream analyses since it contains peptide sequences for the final candidate ORFs. 
+
+
+#2. Run hmmscan against the CAZy (Carbohydrate-Active Enzymes) database using hmmer version 3.3.2
+
+echo "Activate the run_dbcan environment."
+module load conda
+conda activate run_dbcan
+
+echo "You already used hmmpress on the dbCAN.txt file when you installed the CAZy database so there is no need to do that step."
+echo "Now, run hmmscan using hmmer version 3.3.2"
+
+echo "Interspace"
+
+hmmscan --domtblout All_inter_hmmscan_cazy.out /project/egcc/RNAseq_drought_disturbance/db/dbCAN.txt /project/egcc/RNAseq_drought_disturbance/Trinity_ALL_inter_f.Trinity.fasta.transdecoder_dir/longest_orfs.pep > ALL_inter_hmmscan_cazy.log
+
+#this will create a file domtblout with a table with target names, query names, and other useful information. The domtblout file has a .out extension. 
+
+echo "Underspace"
+
+hmmscan --domtblout All_under_hmmscan_cazy.out /project/egcc/RNAseq_drought_disturbance/db/dbCAN.txt /project/egcc/RNAseq_drought_disturbance/Trinity_ALL_under_f.Trinity.fasta.transdecoder_dir/longest_orfs.pep > ALL_under_hmmscan_cazy.log
+
+#this will create a file domtblout with a table with target names, query names, and other useful information. The domtblout file has a .out extension.  
+
+conda deactivate
+
+#Make the directory you will use in step 3. 
+cd /project/egcc/RNAseq_drought_disturbance
+mkdir pfam
+
+#Download the Pfam-A.hmm.gz file from http://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/ 
+#Upload and unzip it in your pfam directory. 
+
+#3. Use trinotate version 3.2.2 to Prepare the hmm pfam database for hmmscan. 
+
+echo "activate the rna_seq environment."
+module load conda
+conda activate /fs1/project/egcc/conda_env/rna_seq
+
+hmmpress /fs1/project/egcc/RNAseq_drought_disturbance/pfam/Pfam-A.hmm
+echo "Four files are created with these extensions: .h3m, .h3i, .h3f, and .h3p"
+
+#4. Run hmmscan against the pfam database using hmmer version 3.3.2
+
+echo "Interspace"
+
+hmmscan --domtblout /fs1/project/egcc/RNAseq_drought_disturbance/pfam/All_inter_hmmscan_pfam.out /fs1/project/egcc/RNAseq_drought_disturbance/pfam/Pfam-A.hmm /project/egcc/RNAseq_drought_disturbance/Trinity_ALL_inter_f.Trinity.fasta.transdecoder_dir/longest_orfs.pep > /fs1/project/egcc/RNAseq_drought_disturbance/pfam/ALL_inter_hmmscan_pfam.log
+
+#this will create a file domtblout with a table with target names, query names, and other useful information. The domtblout file has a .out extension.
+
+echo "Underspace"
+
+hmmscan --domtblout /fs1/project/egcc/RNAseq_drought_disturbance/pfam/All_under_hmmscan_pfam.out /fs1/project/egcc/RNAseq_drought_disturbance/pfam/Pfam-A.hmm /project/egcc/RNAseq_drought_disturbance/Trinity_ALL_under_f.Trinity.fasta.transdecoder_dir/longest_orfs.pep > /fs1/project/egcc/RNAseq_drought_disturbance/pfam/ALL_under_hmmscan_pfam.log
+
+#this will create a file domtblout with a table with target names, query names, and other useful information. The domtblout file has a .out extension.
+
+conda deactivate
