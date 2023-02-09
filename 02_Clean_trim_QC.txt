@@ -64,7 +64,7 @@ multiqc .
 #4. Use the trimmomatic version 0.39 to trim, crop and remove adapters from the sequences." 
 
 echo "The user needs to supply the TruSeq3-PE.fa file mentioned in the command below."
-#The TruSeq3-PE.fa file can be found here https://github.com/timflutre/trimmomatic/blob/master/adapters/TruSeq3-PE.fa
+#The TruSeq3-PE.fa file can be found [here](https://github.com/timflutre/trimmomatic/blob/master/adapters/TruSeq3-PE.fa)
 
 echo "The TruSeq3-PE.fa file was added to both the inter- and underspace directories."
 
