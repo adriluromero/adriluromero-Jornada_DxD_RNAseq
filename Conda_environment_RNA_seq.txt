@@ -1,0 +1,22 @@
+#Jornada_DxD_RNAseq
+
+#Adriana L. Romero-Olivares' protocol for processing RNAseq data of soil
+#Pipeline ran by Andrea Lopez
+#File name: Conda_environment_RNA_seq.txt 
+#Step: Building your conda environment for analysis of rna sequencing data.
+
+#Follow these steps to create the 'rna_seq' Conda environment used throughout this pipeline. 
+
+#First, install Anaconda if you haven't done so. 
+
+#Next, download the 'rna_seq.yml' file. 
+
+#Load Anaconda.
+
+module load conda 
+
+#Create the environment using this command.
+
+conda env create -f rna_seq.yml
+
+#Optional. Practice activating the 'rna_seq' environment.
