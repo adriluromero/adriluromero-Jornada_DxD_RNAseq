@@ -7,9 +7,9 @@ Adriana L. Romero-Olivares' protocol for processing RNAseq data of soil
 This pipeline is divided into 11 sections. Each section has a filename and a step.
 
 ## Hardware Configuration
-###### Ran using New Mexico State University's Discovery HPC Cluster
-###### Operating System: CentOS 7
-###### Scheduler: Slurm 21.08.4
+Ran using New Mexico State University's Discovery HPC Cluster
+Operating System: CentOS 7
+Scheduler: Slurm 21.08.4
 
 
 ## Build Conda Environments:
