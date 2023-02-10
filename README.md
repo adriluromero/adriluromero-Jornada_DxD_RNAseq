@@ -8,9 +8,10 @@ This pipeline is divided into 11 sections. Each section has a filename and a ste
 
 ## Hardware Configuration
 Ran using New Mexico State University's Discovery HPC Cluster
-Operating System: CentOS 7
-Scheduler: Slurm 21.08.4
 
+Operating System: CentOS 7
+
+Scheduler: Slurm 21.08.4
 
 ## Build Conda Environments:
 
