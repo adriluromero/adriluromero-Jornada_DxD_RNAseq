@@ -3,7 +3,7 @@
 #Adriana L. Romero-Olivares' protocol for processing RNAseq data of soil
 #Pipeline ran by Andrea Lopez
 #File name: Conda_environment_RNA_seq.txt 
-#Step: Building your conda environment for analysis of rna sequencing data.
+#Step: Building your conda environment for analysis of RNA sequencing data.
 
 #Follow these steps to create the 'rna_seq' Conda environment used throughout this pipeline. 
 
