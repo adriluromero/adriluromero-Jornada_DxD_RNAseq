@@ -106,3 +106,9 @@ Step: Merge your output files into one dataframe in Rstudio (Manual curation ste
 File name: 11_pfam_merge_files_for_analysis
 
 Step: Merge your output files into one dataframe in RStudio (Manual curation step).
+
+## Raw data files
+Pathogenicity_transcript_counts_interspace.xlsx
+Pathogenicity_transcript_counts_under.xlsx
+Stress_transcript_counts_interspace.xlsx
+Stress_transcript_counts_under.xlsx
