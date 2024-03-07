@@ -107,8 +107,22 @@ File name: 11_pfam_merge_files_for_analysis
 
 Step: Merge your output files into one dataframe in RStudio (Manual curation step).
 
-## Raw data files
+## Raw data files with count data from Salmon 
 Pathogenicity_transcript_counts_interspace.xlsx
 Pathogenicity_transcript_counts_under.xlsx
 Stress_transcript_counts_interspace.xlsx
 Stress_transcript_counts_under.xlsx
+
+## Raw data files with log2fold change data from Bioconductor 
+DESeq2_inter_STRESS_CvsDi.csv
+DESeq2_inter_STRESS_CvsDr.csv
+DESeq2_inter_STRESS_CvsDxD.csv
+DESeq2_inter_pathogenicity_CvsDi.csv
+DESeq2_inter_pathogenicity_CvsDr.csv
+DESeq2_inter_pathogenicity_CvsDxD.csv
+DESeq2_under_STRESS_CvsDi.csv
+DESeq2_under_STRESS_CvsDr.csv
+DESeq2_under_STRESS_CvsDxD.csv
+DESeq2_under_pathogenicity_CvsDi.csv
+DESeq2_under_pathogenicity_CvsDr.csv
+DESeq2_under_pathogenicity_CvsDxD.csv
