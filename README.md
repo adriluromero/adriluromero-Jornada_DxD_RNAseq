@@ -126,3 +126,8 @@ DESeq2_under_STRESS_CvsDxD.csv
 DESeq2_under_pathogenicity_CvsDi.csv
 DESeq2_under_pathogenicity_CvsDr.csv
 DESeq2_under_pathogenicity_CvsDxD.csv
+
+##Statistical and plot scripts for count data and differential analyses 
+differential expression.R
+fold change graphs.R
+Count Data script V2.r
