@@ -1,0 +1,341 @@
+
+library(psych)
+
+####total number of transcripts for stress and pathogenicity
+
+ALLstresspatho <- read.csv("stress_pathogenicity_transcript_counts_ALL.csv", header=TRUE)
+head(ALLstresspatho)
+
+library(ggplot2)
+library(ggtext)
+library(RColorBrewer)
+
+##cbbPalette <- c("#008837", "#7b3294")
+
+cbbPalette <- c("#696969","#D3D3D3")
+
+cat_plot <- ggplot(ALLstresspatho, aes (treatment, logplusone, fill = gene)) +
+  geom_boxplot() + 
+  geom_jitter(shape=16, position=position_jitterdodge(jitter.width = 0.01)) +
+  ylim(0, 6) + ##to force Y axes to go from o to 8
+  # geom_boxplot() + 
+  # geom_point() + 
+  # geom_point(position = position_jitterdodge(jitter.width = 0.01)) +
+  xlab("") + 
+  ylab("Transcript counts 
+  (log+1)") +
+  theme(axis.title.x = element_text(face='bold',size=16,hjust=0.5),
+        axis.title.y = element_text(face='bold',size=16,vjust=1),
+        axis.text.x = element_text(face='bold',size=14,color='black'),
+        axis.text.y = element_text(face='bold',size=14,color='black'))
+
+
+cat_plot
+
+cat_plot_final <- cat_plot + 
+  theme(panel.grid = element_blank(), 
+        panel.background = element_rect(fill = "white"), 
+        panel.border = element_rect(color = "black", fill = NA, size = 0.5), 
+        axis.title.x = element_text(color="black", vjust=1),
+        axis.title.y = element_text(color="black" , vjust=1)) 
+
+cat_plot + scale_fill_brewer(palette="Dark2")+ theme_classic()
+
+cat_plot_final <- cat_plot + scale_fill_manual(values = c("#696969","#D3D3D3")) + theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4),
+        text = element_text(size=20),
+        legend.position = "right")
+
+cat_plot_final
+
+cat_plot_facet <- cat_plot_final + facet_grid(. ~ location, scales='fixed') #scales='fixed' makes that all y-axes are the same
+cat_plot_facet  
+
+jpeg("transcript_counts.jpeg",height=6,width=12,units = 'in', res = 600)#height in inches, resolution 600 dpi
+plot(cat_plot_facet)
+dev.off()
+
+
+####Nested one way ANOVA for patho transcript counts
+
+ALLpatho <- read.csv("ALLpathocounts.csv", header=TRUE)
+head(ALLpatho)
+
+treatment <-as.factor(ALLpatho$treatment)
+location <-as.factor(ALLpatho$location)
+
+
+Data.aov <- aov(ALLpatho$counts ~ treatment/location, data = ALLpatho)
+summary(Data.aov)
+
+                      Df    Sum Sq Mean Sq F value   Pr(>F)    
+treatment              3    342950  114317   6.721 0.000158 ***
+treatment:location     4     80075   20019   1.177 0.318659    
+Residuals          23788 404622142   17010                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+TukeyHSD(Data.aov)
+
+Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = ALLpatho$counts ~ treatment/location, data = ALLpatho)
+
+$treatment
+                         diff       lwr       upr     p adj
+disturbance-control  5.616742 -0.527079 11.760564 0.0873001
+drought-control      2.958312 -3.185509  9.102134 0.6031740
+DxD-control         10.329131  4.185310 16.472952 0.0000921
+drought-disturbance -2.658430 -8.802251  3.485391 0.6823175
+DxD-disturbance      4.712389 -1.431433 10.856210 0.1991691
+DxD-drought          7.370819  1.226997 13.514640 0.0110648
+
+$`treatment:location`
+                                           diff          lwr       upr     p adj
+disturbance:inter-control:inter       0.6017063 -11.24527703 12.448690 0.9999999
+drought:inter-control:inter          -1.8751684 -13.72215175  9.971815 0.9997450
+DxD:inter-control:inter               9.9151325  -1.93185090 21.762116 0.1799719
+control:under-control:inter          -4.4013399 -14.99208661  6.189407 0.9135148
+disturbance:under-control:inter       4.2160701  -6.37467661 14.806817 0.9302526
+drought:under-control:inter           1.4490094  -9.14173733 12.039756 0.9999041
+DxD:under-control:inter               6.1755005  -4.41524620 16.766247 0.6422993
+drought:inter-disturbance:inter      -2.4768747 -14.32385808  9.370109 0.9984171
+DxD:inter-disturbance:inter           9.3134261  -2.53355723 21.160409 0.2496754
+control:under-disturbance:inter      -5.0030462 -15.59379294  5.587700 0.8426096
+disturbance:under-disturbance:inter   3.6143637  -6.97638294 14.205110 0.9692686
+drought:under-disturbance:inter       0.8473030  -9.74344366 11.438050 0.9999976
+DxD:under-disturbance:inter           5.5737942  -5.01695253 16.164541 0.7534093
+DxD:inter-drought:inter              11.7903009  -0.05668251 23.637284 0.0521629
+control:under-drought:inter          -2.5261715 -13.11691822  8.064575 0.9963445
+disturbance:under-drought:inter       6.0912385  -4.49950822 16.681985 0.6585784
+drought:under-drought:inter           3.3241777  -7.26656894 13.914924 0.9808566
+DxD:under-drought:inter               8.0506689  -2.54007781 18.641416 0.2911530
+control:under-DxD:inter             -14.3164724 -24.90721907 -3.725726 0.0010902
+disturbance:under-DxD:inter          -5.6990624 -16.28980908  4.891684 0.7314439
+drought:under-DxD:inter              -8.4661231 -19.05686980  2.124624 0.2300281
+DxD:under-DxD:inter                  -3.7396320 -14.33037866  6.851115 0.9629331
+disturbance:under-control:under       8.6174100  -0.54647653 17.781297 0.0830730
+drought:under-control:under           5.8503493  -3.31353725 15.014236 0.5264844
+DxD:under-control:under              10.5768404   1.41295389 19.740727 0.0110565
+drought:under-disturbance:under      -2.7670607 -11.93094724  6.396826 0.9847089
+DxD:under-disturbance:under           1.9594304  -7.20445611 11.123317 0.9981717
+DxD:under-drought:under               4.7264911  -4.43739539 13.890378 0.7722862
+
+####ONLY SIGNIFICANT DIFFERENCES BETWEEN CONTROL AND DXD IN UNDER VEGETATION 
+
+
+####Nested one way ANOVA for stress transcript counts
+
+ALLstress <- read.csv("ALLstresscounts.csv", header=TRUE)
+head(ALLstress)
+
+treatment <-as.factor(ALLstress$treatment)
+location <-as.factor(ALLstress$location)
+
+
+Data.aov <- aov(ALLstress$counts ~ treatment/location, data = ALLstress)
+summary(Data.aov)
+
+TukeyHSD(Data.aov)
+                      Df    Sum Sq Mean Sq F value   Pr(>F)    
+treatment              3 6.607e+06 2202302   13.92 4.55e-09 ***
+treatment:location     4 7.788e+06 1947004   12.31 5.31e-10 ***
+Residuals          42952 6.795e+09  158208                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+ Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = ALLstress$counts ~ treatment/location, data = ALLstress)
+
+$treatment
+                          diff        lwr      upr     p adj
+disturbance-control  6.5891993  -7.355109 20.53351 0.6179394
+drought-control     27.3530726  13.408764 41.29738 0.0000028
+DxD-control         27.9508380  14.006529 41.89515 0.0000016
+drought-disturbance 20.7638734   6.819565 34.70818 0.0007530
+DxD-disturbance     21.3616387   7.417330 35.30595 0.0004816
+DxD-drought          0.5977654 -13.346543 14.54207 0.9995224
+
+$`treatment:location`
+                                          diff       lwr      upr     p adj
+disturbance:inter-control:inter     -0.2884570 -26.37601 25.79910 1.0000000
+drought:inter-control:inter         -1.4373683 -27.52492 24.65019 0.9999998
+DxD:inter-control:inter              0.2329665 -25.85459 26.32052 1.0000000
+control:under-control:inter         -8.5378175 -32.30633 15.23069 0.9593448
+disturbance:under-control:inter      2.5921871 -21.17632 26.36070 0.9999795
+drought:under-control:inter         37.8234439  14.05493 61.59195 0.0000387
+DxD:under-control:inter             37.7130714  13.94456 61.48158 0.0000415
+drought:inter-disturbance:inter     -1.1489113 -27.23647 24.93864 1.0000000
+DxD:inter-disturbance:inter          0.5214236 -25.56613 26.60898 1.0000000
+control:under-disturbance:inter     -8.2493605 -32.01787 15.51915 0.9662945
+disturbance:under-disturbance:inter  2.8806442 -20.88787 26.64915 0.9999579
+drought:under-disturbance:inter     38.1119009  14.34339 61.88041 0.0000322
+DxD:under-disturbance:inter         38.0015284  14.23302 61.77004 0.0000345
+DxD:inter-drought:inter              1.6703348 -24.41722 27.75789 0.9999995
+control:under-drought:inter         -7.1004492 -30.86896 16.66806 0.9856499
+disturbance:under-drought:inter      4.0295554 -19.73895 27.79807 0.9995978
+drought:under-drought:inter         39.2608122  15.49230 63.02932 0.0000153
+DxD:under-drought:inter             39.1504397  15.38193 62.91895 0.0000164
+control:under-DxD:inter             -8.7707840 -32.53929 14.99773 0.9530277
+disturbance:under-DxD:inter          2.3592206 -21.40929 26.12773 0.9999893
+drought:under-DxD:inter             37.5904774  13.82197 61.35899 0.0000448
+DxD:under-DxD:inter                 37.4801048  13.71159 61.24862 0.0000481
+disturbance:under-control:under     11.1300046 -10.06725 32.32726 0.7557245
+drought:under-control:under         46.3612614  25.16401 67.55852 0.0000000
+DxD:under-control:under             46.2508889  25.05363 67.44814 0.0000000
+drought:under-disturbance:under     35.2312568  14.03400 56.42851 0.0000130
+DxD:under-disturbance:under         35.1208842  13.92363 56.31814 0.0000141
+DxD:under-drought:under             -0.1103725 -21.30763 21.08688 1.0000000
+
+####total number of DEG for stress and pathogenicity
+
+ALLstresspathoDEG <- read.csv("stress_pathogenicity_DEG_ALL.csv", header=TRUE)
+head(ALLstresspathoDEG)
+
+cbbPalette <- c("#696969","#D3D3D3")
+
+cat_plot <- ggplot(ALLstresspathoDEG, aes (treatment, log2FoldChange, fill = genes)) +
+  geom_boxplot() + 
+  geom_jitter(shape=16, position=position_jitterdodge(jitter.width = 0.01)) +
+  ylim(-30, 30) + ##to force Y axes to go from o to 8
+  # geom_boxplot() + 
+  # geom_point() + 
+  # geom_point(position = position_jitterdodge(jitter.width = 0.01)) +
+  xlab("") + 
+  ylab("Fold change expression in 
+  response to treatment 
+  (log2)") +
+  theme(axis.title.x = element_text(face='bold',size=16,hjust=0.5),
+        axis.title.y = element_text(face='bold',size=16,vjust=1),
+        axis.text.x = element_text(face='bold',size=14,color='black'),
+        axis.text.y = element_text(face='bold',size=14,color='black'))
+
+
+cat_plot
+
+cat_plot_final <- cat_plot + 
+  theme(panel.grid = element_blank(), 
+        panel.background = element_rect(fill = "white"), 
+        panel.border = element_rect(color = "black", fill = NA, size = 0.5), 
+        axis.title.x = element_text(color="black", vjust=1),
+        axis.title.y = element_text(color="black" , vjust=1)) 
+
+cat_plot + scale_fill_brewer(palette="Dark2")+ theme_classic()
+
+cat_plot_final <- cat_plot + scale_fill_manual(values = c("#696969","#D3D3D3")) + theme_bw()+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.4),
+        text = element_text(size=20),
+        legend.position = "right")
+
+cat_plot_final
+
+cat_plot_facet <- cat_plot_final + facet_grid(. ~ location, scales='fixed') #scales='fixed' makes that all y-axes are the same
+cat_plot_facet  
+
+jpeg("DEGs by location.jpeg",height=6,width=12,units = 'in', res = 600)#height in inches, resolution 600 dpi
+plot(cat_plot_facet)
+dev.off()
+
+####Nested one way ANOVA for patho DEG
+
+ALLpathoDEG <- read.csv("ALLpathoDEG.csv", header=TRUE)
+head(ALLpathoDEG)
+
+treatment <-as.factor(ALLpathoDEG$treatment)
+location <-as.factor(ALLpathoDEG$location)
+
+
+Data.aov <- aov(ALLpathoDEG$log2FoldChange ~ treatment/location, data = ALLpathoDEG)
+summary(Data.aov)
+
+TukeyHSD(Data.aov)
+
+                    Df Sum Sq Mean Sq F value   Pr(>F)    
+treatment            2   4232  2115.9  30.926 2.57e-13 ***
+treatment:location   3   1188   396.1   5.789 0.000686 ***
+Residuals          453  30993    68.4                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = ALLpathoDEG$log2FoldChange ~ treatment/location, data = ALLpathoDEG)
+
+$treatment
+                         diff       lwr      upr     p adj
+drought-disturbance -1.193951 -3.496907 1.109006 0.4424736
+DxD-disturbance      5.622113  3.452160 7.792067 0.0000000
+DxD-drought          6.816064  4.587093 9.045036 0.0000000
+
+$`treatment:location`
+                                           diff          lwr        upr     p adj
+drought:inter-disturbance:inter       0.5223086  -3.65236763  4.6969849 0.9992264
+DxD:inter-disturbance:inter           5.6824191   1.66570346  9.6991348 0.0008538
+disturbance:under-disturbance:inter  -2.0095981  -5.89227785  1.8730816 0.6764528
+drought:under-disturbance:inter      -4.5819343  -8.54590336 -0.6179653 0.0129139
+DxD:under-disturbance:inter           3.7168574   0.01075652  7.4229583 0.0488575
+DxD:inter-drought:inter               5.1601105   1.02735042  9.2928706 0.0052062
+disturbance:under-drought:inter      -2.5319068  -6.53451877  1.4707053 0.4600448
+drought:under-drought:inter          -5.1042430  -9.18575635 -1.0227296 0.0051015
+DxD:under-drought:inter               3.1945488  -0.63701551  7.0261131 0.1632504
+disturbance:under-DxD:inter          -7.6920173 -11.52959277 -3.8544417 0.0000003
+drought:under-DxD:inter             -10.2643535 -14.18415376 -6.3445532 0.0000000
+DxD:under-DxD:inter                  -1.9655617  -5.62438226  1.6932589 0.6401601
+drought:under-disturbance:under      -2.5723362  -6.35466770  1.2099953 0.3752646
+DxD:under-disturbance:under           5.7264555   2.21530688  9.2376042 0.0000588
+DxD:under-drought:under               8.2987918   4.69795664 11.8996269 0.0000000
+
+
+####Nested one way ANOVA for stress DEG
+
+ALLstressDEG <- read.csv("ALLstressDEG.csv", header=TRUE)
+head(ALLstressDEG)
+
+treatment <-as.factor(ALLstressDEG$treatment)
+location <-as.factor(ALLstressDEG$location)
+
+
+Data.aov <- aov(ALLstressDEG$log2FoldChange ~ treatment/location, data = ALLstressDEG)
+summary(Data.aov)
+
+TukeyHSD(Data.aov)
+
+                     Df Sum Sq Mean Sq F value   Pr(>F)    
+treatment             2  11359    5679  78.086  < 2e-16 ***
+treatment:location    3   2000     667   9.168 5.09e-06 ***
+Residuals          1776 129176      73                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = ALLstressDEG$log2FoldChange ~ treatment/location, data = ALLstressDEG)
+
+$treatment
+                         diff        lwr      upr     p adj
+drought-disturbance 0.7620453 -0.4167994 1.940890 0.2834391
+DxD-disturbance     5.6198310  4.4691625 6.770499 0.0000000
+DxD-drought         4.8577856  3.7018872 6.013684 0.0000000
+
+$`treatment:location`
+                                          diff         lwr        upr     p adj
+drought:inter-disturbance:inter      3.5716310  1.24838454  5.8948775 0.0001775
+DxD:inter-disturbance:inter          8.4961933  6.22731025 10.7650763 0.0000000
+disturbance:under-disturbance:inter  2.9558884  0.89489800  5.0168788 0.0006371
+drought:under-disturbance:inter      1.9451185 -0.09994028  3.9901772 0.0730769
+DxD:under-disturbance:inter          6.7710680  4.76506203  8.7770740 0.0000000
+DxD:inter-drought:inter              4.9245623  2.59170181  7.2574227 0.0000000
+disturbance:under-drought:inter     -0.6157426 -2.74696037  1.5154751 0.9631108
+drought:under-drought:inter         -1.6265126 -3.74232751  0.4893024 0.2413798
+DxD:under-drought:inter              3.1994370  1.12134468  5.2775293 0.0001724
+disturbance:under-DxD:inter         -5.5403049 -7.61212660 -3.4684832 0.0000000
+drought:under-DxD:inter             -6.5510748 -8.60704881 -4.4951008 0.0000000
+DxD:under-DxD:inter                 -1.7251253 -3.74225783  0.2920072 0.1432123
+drought:under-disturbance:under     -1.0107699 -2.83474367  0.8132038 0.6113264
+DxD:under-disturbance:under          3.8151796  2.03510239  5.5952568 0.0000000
+DxD:under-drought:under              4.8259495  3.06434269  6.5875564 0.0000000
